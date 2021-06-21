@@ -1,0 +1,215 @@
+<html>
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+        
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+        </style>
+    <script>
+        var x;
+        var startstop = 0;
+
+        function startStop() { /* Toggle StartStop */
+
+        startstop = startstop + 1;
+
+        if (startstop === 1) {
+            start();
+            document.getElementById("start").innerHTML = "Stop";
+        } else if (startstop === 2) {
+            document.getElementById("start").innerHTML = "Start";
+            startstop = 0;
+            stop();
+        }
+
+        }
+        
+
+        function start() {
+        x = setInterval(timer, 10);
+        } /* Start */
+
+        function stop() {
+        clearInterval(x);
+        } /* Stop */
+
+        var milisec = 0;
+        var sec = 0; /* holds incrementing value */
+        var min = 0;
+        var hour = 0;
+
+        /* Contains and outputs returned value of  function checkTime */
+
+        var miliSecOut = 0;
+        var secOut = 0;
+        var minOut = 0;
+        var hourOut = 0;
+
+        /* Output variable End */
+
+        function assign(){
+        
+            for (let i = 0; i < 6; i++) {
+                if (document.getElementById(i.toString()).checked === true){
+                    document.getElementById(i.toString() + "_milisec").innerHTML = miliSecOut;
+                    document.getElementById(i.toString() + "_sec").innerHTML = secOut;
+                    document.getElementById(i.toString() + "_min").innerHTML = minOut;
+                    document.getElementById(i.toString() + "_hour").innerHTML = hourOut;
+                    var check_id = i
+                };
+
+                };
+                document.getElementById(check_id.toString()).checked = false;
+                document.getElementById((check_id+1).toString()).checked = true;
+        } 
+            
+        
+        
+
+        function timer() {
+        /* Main Timer */
+
+
+        miliSecOut = checkTime(milisec);
+        secOut = checkTime(sec);
+        minOut = checkTime(min);
+        hourOut = checkTime(hour);
+
+        milisec = ++milisec;
+
+        if (milisec === 100) {
+            milisec = 0;
+            sec = ++sec;
+        }
+
+        if (sec == 60) {
+            min = ++min;
+            sec = 0;
+        }
+
+        if (min == 60) {
+            min = 0;
+            hour = ++hour;
+
+        }
+
+
+        document.getElementById("milisec").innerHTML = miliSecOut;
+        document.getElementById("sec").innerHTML = secOut;
+        document.getElementById("min").innerHTML = minOut;
+        document.getElementById("hour").innerHTML = hourOut;
+
+        }
+
+
+        /* Adds 0 when value is <10 */
+
+
+        function checkTime(i) {
+        if (i < 10) {
+            i = "0" + i;
+        }
+        return i;
+        }
+
+        function reset() {
+
+
+        /*Reset*/
+
+        milisec = 0;
+        sec = 0;
+        min = 0
+        hour = 0;
+
+        document.getElementById("milisec").innerHTML = "00";
+        document.getElementById("sec").innerHTML = "00";
+        document.getElementById("min").innerHTML = "00";
+        document.getElementById("hour").innerHTML = "00";
+
+        }
+    </script>
+    <body>
+        <h1>
+        <span id="hour">00</span> :
+        <span id="min">00</span> :
+        <span id="sec">00</span> :
+        <span id="milisec">00</span>
+        </h1>
+
+        <button onclick="startStop()" id="start">Start</button>
+        <button onclick="reset()">Reset</button>
+        <button onclick="assign()">Assign</button>
+        <table>
+            <tr>
+              <th>Translation (EN)</th>
+              <th>Transcription</th>
+              <th>Notes</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+            </tr>
+            <tr>
+              <td><form action="/action_page.php"><input type="text" id="0_transcription" name="0_transcription" value=""><br></td>
+              <td><form action="/action_page.php"><input type="text" id="0_translation" name="0_translation" value=""><br></td>
+              <td><form action="/action_page.php"><input type="text" id="0_notes" name="0_notes" value=""><br></td>
+              <td><form><input type="radio" name="colors" id="0"></form><h1>
+                <span id="0_hour">00</span> :
+                <span id="0_min">00</span> :
+                <span id="0_sec">00</span> :
+                <span id="0_milisec">00</span>
+                </h1></td>
+              <td><form><input type="radio" name="colors" id="1"></form><h1>
+                <span id="1_hour">00</span> :
+                <span id="1_min">00</span> :
+                <span id="1_sec">00</span> :
+                <span id="1_milisec">00</span>
+                </h1></td>
+            </tr>
+            <tr>
+                <td><form action="/action_page.php"><input type="text" id="1_transcription" name="1_transcription" value=""><br></td>
+                <td><form action="/action_page.php"><input type="text" id="1_translation" name="1_translation" value=""><br></td>
+                <td><form action="/action_page.php"><input type="text" id="1_notes" name="1_notes" value=""><br></td>
+                <td><form><input type="radio" name="colors" id="2"></form><h1>
+                  <span id="2_hour">00</span> :
+                  <span id="2_min">00</span> :
+                  <span id="2_sec">00</span> :
+                  <span id="2_milisec">00</span>
+                  </h1></td>
+                <td><form><input type="radio" name="colors" id="3"></form><h1>
+                  <span id="3_hour">00</span> :
+                  <span id="3_min">00</span> :
+                  <span id="3_sec">00</span> :
+                  <span id="3_milisec">00</span>
+                  </h1></td>
+              </tr>
+              <tr>
+                <td><form action="/action_page.php"><input type="text" id="2_transcription" name="2_transcription" value=""><br></td>
+                <td><form action="/action_page.php"><input type="text" id="2_translation" name="2_translation" value=""><br></td>
+                <td><form action="/action_page.php"><input type="text" id="2_notes" name="2_notes" value=""><br></td>
+                <td><form><input type="radio" name="colors" id="4"></form><h1>
+                  <span id="4_hour">00</span> :
+                  <span id="4_min">00</span> :
+                  <span id="4_sec">00</span> :
+                  <span id="4_milisec">00</span>
+                  </h1></td>
+                <td><form><input type="radio" name="colors" id="5"></form><h1>
+                  <span id="5_hour">00</span> :
+                  <span id="5_min">00</span> :
+                  <span id="5_sec">00</span> :
+                  <span id="5_milisec">00</span>
+                  </h1></td>
+              </tr>
+          </table>
+    </body>
+</html>
