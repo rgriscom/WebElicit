@@ -15,10 +15,73 @@
         tr:nth-child(even) {
           background-color: #dddddd;
         }
+        body {margin:0;}
+        .navbar {
+          overflow: hidden;
+          position: fixed;
+          top: 0;
+          width: 100%;
+          border-style: solid;
+          background-color: white;
+          padding: 16px;
+        }
+
+
+
+
+        .main {
+          padding: 16px;
+          margin-top: 120px;
+          height: 1500px; /* Used in this example to enable scrolling */
+        }
         </style>
     <script>
         var x;
         var startstop = 0;
+
+        var columns = 5
+var rows = 3;
+
+function addColumn() {
+	var row_list = [];
+  	for (let i = 0; i < rows; i++) {
+  		row_list[i] = document.getElementById("myTable").rows[i];
+    	var x = row_list[i].insertCell((columns-2));
+  		x.innerHTML = "<form><input type=\"text\" value=\"\"></form>";
+    }
+  columns = columns + 1;
+}
+function addRow() {
+  var table = document.getElementById("myTable");
+  var row = table.insertRow(-1);
+  
+  for (let i = 0; i < (columns - 2); i++) {
+  	new_cell = row.insertCell(i);
+    new_cell.innerHTML = "<form><input type=\"text\" value=\"\"></form>";
+    }
+    rows = rows + 1;
+    start_cell = row.insertCell(-1);
+    start_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows-1)*2).toString() + "\"></form><h1><span id=\"" + ((rows-1)*2).toString() + "_hour\">00</span> : <span id=\"" + ((rows-1)*2).toString() + "_min\">00</span> : <span id=\"" + ((rows-1)*2).toString() + "_sec\">00</span> : <span id=\"" + ((rows-1)*2).toString() + "_milisec\">00</span></h1>";
+    end_cell = row.insertCell(-1);
+    end_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows*2)-1).toString() + "\"></form><h1><span id=\"" + ((rows*2)-1).toString() + "_hour\">00</span> : <span id=\"" + ((rows*2)-1).toString() + "_min\">00</span> : <span id=\"" + ((rows*2)-1).toString() + "_sec\">00</span> : <span id=\"" + ((rows*2)-1).toString() + "_milisec\">00</span></h1>";
+
+}
+
+function deleteRow() {
+  document.getElementById("myTable").deleteRow(-1);
+  rows = rows - 1;
+}
+
+function deleteColumn() {
+
+	var row_list = [];
+  	for (let i = 0; i < rows; i++) {
+  		row_list[i] = document.getElementById("myTable").rows[i];
+    	row_list[i].deleteCell((columns-3));
+    }
+  
+  columns = columns - 1;
+}
 
         function startStop() { /* Toggle StartStop */
 
@@ -59,21 +122,30 @@
         /* Output variable End */
 
         function assign(){
-        
-            for (let i = 0; i < 6; i++) {
-                if (document.getElementById(i.toString()).checked === true){
+          var check_id = 0;
+            for (let i = 0; i < (rows*2); i++) {
+                
+                if (document.getElementById("radio_" + i.toString()).checked === true){
                     document.getElementById(i.toString() + "_milisec").innerHTML = miliSecOut;
                     document.getElementById(i.toString() + "_sec").innerHTML = secOut;
                     document.getElementById(i.toString() + "_min").innerHTML = minOut;
                     document.getElementById(i.toString() + "_hour").innerHTML = hourOut;
-                    var check_id = i
-                };
-
-                };
-                document.getElementById(check_id.toString()).checked = false;
-                document.getElementById((check_id+1).toString()).checked = true;
+                    check_id = i;
+                }
+              }
+            document.getElementById("radio_" + check_id.toString()).checked = false;
+            document.getElementById("radio_" + (check_id+1).toString()).checked = true;
         } 
-            
+        
+        function clear_checked(){
+            for (let i = 0; i < (rows*2); i++) {
+                
+                if (document.getElementById("radio_" + i.toString()).checked === true){
+                  document.getElementById("radio_" + i.toString()).checked = false
+                    
+                }
+              }
+        }      
         
         
 
@@ -141,75 +213,86 @@
         }
     </script>
     <body>
-        <h1>
+      <div class="navbar">
+        <table id="headerTable">
+          <tr><td><h1>
         <span id="hour">00</span> :
         <span id="min">00</span> :
         <span id="sec">00</span> :
         <span id="milisec">00</span>
         </h1>
-
+      </td>
+      <td>
         <button onclick="startStop()" id="start">Start</button>
         <button onclick="reset()">Reset</button>
-        <button onclick="assign()">Assign</button>
-        <table>
+        <button onclick="assign()">Assign time</button>
+        <button onclick="clear_checked()">Clear Selected Time(s)</button>
+        <p>
+        <button onclick="addColumn()">Add Column</button>
+        <button onclick="deleteColumn()">Delete Column</button>
+        <button onclick="addRow()">Add Row</button>
+        <button onclick="deleteRow()">Delete row</button>
+      </td>
+      </tr>
+      </table>
+      </p>
+    </div>  
+    <div class="main">
+        <table id="myTable">
             <tr>
-              <th>Translation (EN)</th>
-              <th>Transcription</th>
-              <th>Notes</th>
-              <th>Start Time</th>
-              <th>End Time</th>
+                <td><form><input type="text" value=""></form></td>
+                <td><form><input type="text" value=""></form></td>
+                <td><form><input type="text" value=""></form></td>
+                <td><form><input type="radio" id="radio_0"></form><h1>
+                  <span id="0_hour">00</span> :
+                  <span id="0_min">00</span> :
+                  <span id="0_sec">00</span> :
+                  <span id="0_milisec">00</span>
+                  </h1></td>
+                <td><form><input type="radio" id="radio_1"></form><h1>
+                  <span id="1_hour">00</span> :
+                  <span id="1_min">00</span> :
+                  <span id="1_sec">00</span> :
+                  <span id="1_milisec">00</span>
+                  </h1></td>
             </tr>
             <tr>
-              <td><form action="/action_page.php"><input type="text" id="0_transcription" name="0_transcription" value=""><br></td>
-              <td><form action="/action_page.php"><input type="text" id="0_translation" name="0_translation" value=""><br></td>
-              <td><form action="/action_page.php"><input type="text" id="0_notes" name="0_notes" value=""><br></td>
-              <td><form><input type="radio" name="colors" id="0"></form><h1>
-                <span id="0_hour">00</span> :
-                <span id="0_min">00</span> :
-                <span id="0_sec">00</span> :
-                <span id="0_milisec">00</span>
+              <td><form><input type="text" value=""></form></td>
+              <td><form><input type="text" value=""></form></td>
+              <td><form><input type="text" value=""></form></td>
+              <td><form><input type="radio" id="radio_2"></form><h1>
+                <span id="2_hour">00</span> :
+                <span id="2_min">00</span> :
+                <span id="2_sec">00</span> :
+                <span id="2_milisec">00</span>
                 </h1></td>
-              <td><form><input type="radio" name="colors" id="1"></form><h1>
-                <span id="1_hour">00</span> :
-                <span id="1_min">00</span> :
-                <span id="1_sec">00</span> :
-                <span id="1_milisec">00</span>
+              <td><form><input type="radio" id="radio_3"></form><h1>
+                <span id="3_hour">00</span> :
+                <span id="3_min">00</span> :
+                <span id="3_sec">00</span> :
+                <span id="3_milisec">00</span>
                 </h1></td>
-            </tr>
-            <tr>
-                <td><form action="/action_page.php"><input type="text" id="1_transcription" name="1_transcription" value=""><br></td>
-                <td><form action="/action_page.php"><input type="text" id="1_translation" name="1_translation" value=""><br></td>
-                <td><form action="/action_page.php"><input type="text" id="1_notes" name="1_notes" value=""><br></td>
-                <td><form><input type="radio" name="colors" id="2"></form><h1>
-                  <span id="2_hour">00</span> :
-                  <span id="2_min">00</span> :
-                  <span id="2_sec">00</span> :
-                  <span id="2_milisec">00</span>
-                  </h1></td>
-                <td><form><input type="radio" name="colors" id="3"></form><h1>
-                  <span id="3_hour">00</span> :
-                  <span id="3_min">00</span> :
-                  <span id="3_sec">00</span> :
-                  <span id="3_milisec">00</span>
-                  </h1></td>
-              </tr>
-              <tr>
-                <td><form action="/action_page.php"><input type="text" id="2_transcription" name="2_transcription" value=""><br></td>
-                <td><form action="/action_page.php"><input type="text" id="2_translation" name="2_translation" value=""><br></td>
-                <td><form action="/action_page.php"><input type="text" id="2_notes" name="2_notes" value=""><br></td>
-                <td><form><input type="radio" name="colors" id="4"></form><h1>
-                  <span id="4_hour">00</span> :
-                  <span id="4_min">00</span> :
-                  <span id="4_sec">00</span> :
-                  <span id="4_milisec">00</span>
-                  </h1></td>
-                <td><form><input type="radio" name="colors" id="5"></form><h1>
-                  <span id="5_hour">00</span> :
-                  <span id="5_min">00</span> :
-                  <span id="5_sec">00</span> :
-                  <span id="5_milisec">00</span>
-                  </h1></td>
-              </tr>
-          </table>
+          </tr>
+          <tr>
+            <td><form><input type="text" value=""></form></td>
+            <td><form><input type="text" value=""></form></td>
+            <td><form><input type="text" value=""></form></td>
+            <td><form><input type="radio" id="radio_4"></form><h1>
+              <span id="4_hour">00</span> :
+              <span id="4_min">00</span> :
+              <span id="4_sec">00</span> :
+              <span id="4_milisec">00</span>
+              </h1></td>
+            <td><form><input type="radio" id="radio_5"></form><h1>
+              <span id="5_hour">00</span> :
+              <span id="5_min">00</span> :
+              <span id="5_sec">00</span> :
+              <span id="5_milisec">00</span>
+              </h1></td>
+        </tr>
+        </table><br>
+      </div>
+        
+        
     </body>
 </html>
