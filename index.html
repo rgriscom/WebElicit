@@ -42,6 +42,18 @@
         var columns = 5
 var rows = 4;
 
+function radioClick(radio_num){
+  for (let i = 0; i < ((rows-1)*2); i++) {
+    if (document.getElementById("radio_" + i.toString()).checked === true){
+       document.getElementById("radio_" + i.toString()).checked = false;
+                    
+    }
+}
+  document.getElementById("radio_" + radio_num.toString()).checked = true;         
+
+
+}
+
 function addColumn() {
 	var row_list = [];
   	for (let i = 0; i < rows; i++) {
@@ -62,9 +74,9 @@ function addRow() {
     translation_cell = row.insertCell(0);
     translation_cell.innerHTML = "<form><input type=\"text\" value=\"\" id=\"" + (rows-1).toString() +  "_translation\"></form>";    
     start_cell = row.insertCell(-1);
-    start_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows-2)*2).toString() + "\"></form><span id=\"" + ((rows-2)*2).toString() + "_hour\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_min\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_sec\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_milisec\">00</span>";
+    start_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows-2)*2).toString() + "\" onclick=\"radioClick(" + ((rows-2)*2).toString() + ")\"></form><span id=\"" + ((rows-2)*2).toString() + "_hour\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_min\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_sec\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_milisec\">00</span>";
     end_cell = row.insertCell(-1);
-    end_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows*2)-3).toString() + "\"></form><span id=\"" + ((rows*2)-3).toString() + "_hour\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_min\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_sec\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_milisec\">00</span>";
+    end_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows*2)-3).toString() + "\"  onclick=\"radioClick(" + ((rows*2)-3).toString() + ")\"></form><span id=\"" + ((rows*2)-3).toString() + "_hour\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_min\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_sec\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_milisec\">00</span>";
 
 }
 
@@ -187,15 +199,7 @@ function createJSON() {
             document.getElementById("radio_" + (check_id+1).toString()).checked = true;
         } 
         
-        function clear_checked(){
-            for (let i = 0; i < (rows*2); i++) {
-                
-                if (document.getElementById("radio_" + i.toString()).checked === true){
-                  document.getElementById("radio_" + i.toString()).checked = false
-                    
-                }
-              }
-        }      
+             
         
         
 
@@ -276,7 +280,6 @@ function createJSON() {
         <button onclick="startStop()" id="start">Start</button>
         <button onclick="reset()">Reset</button>
         <button onclick="assign()">Assign time</button>
-        <button onclick="clear_checked()">Clear Selected Time(s)</button>
         <p>
         
         
@@ -300,13 +303,13 @@ function createJSON() {
                 <td><form><input type="text" name="Translation" value="" id="1_translation"></form></td>
                 <td><form><input type="text" name="Transcription" value="" id="1_transcription"></form></td>
                 <td><form><input type="text" name="Notes" value="" id="1_notes"></form></td>
-                <td><form><input type="radio" id="radio_0"></form>
+                <td><form><input type="radio" id="radio_0" onclick="radioClick(0)"></form>
                   <span id="0_hour">00</span> :
                   <span id="0_min">00</span> :
                   <span id="0_sec">00</span> :
                   <span id="0_milisec">00</span>
                   </td>
-                <td><form><input type="radio" id="radio_1"></form>
+                <td><form><input type="radio" id="radio_1" onclick="radioClick(1)"></form>
                   <span id="1_hour">00</span> :
                   <span id="1_min">00</span> :
                   <span id="1_sec">00</span> :
@@ -317,13 +320,13 @@ function createJSON() {
               <td><form><input type="text" name="Translation" value="" id="2_translation"></form></td>
                 <td><form><input type="text" name="Transcription" value="" id="2_transcription"></form></td>
                 <td><form><input type="text" name="Notes" value="" id="2_notes"></form></td>
-              <td><form><input type="radio" id="radio_2"></form>
+              <td><form><input type="radio" id="radio_2" onclick="radioClick(2)"></form>
                 <span id="2_hour">00</span> :
                 <span id="2_min">00</span> :
                 <span id="2_sec">00</span> :
                 <span id="2_milisec">00</span>
                 </td>
-              <td><form><input type="radio" id="radio_3"></form>
+              <td><form><input type="radio" id="radio_3" onclick="radioClick(3)"></form>
                 <span id="3_hour">00</span> :
                 <span id="3_min">00</span> :
                 <span id="3_sec">00</span> :
@@ -334,13 +337,13 @@ function createJSON() {
             <td><form><input type="text" name="Translation" value="" id="3_translation"></form></td>
                 <td><form><input type="text" name="Transcription" value="" id="3_transcription"></form></td>
                 <td><form><input type="text" name="Notes" value="" id="3_notes"></form></td>
-            <td><form><input type="radio" id="radio_4"></form>
+            <td><form><input type="radio" id="radio_4" onclick="radioClick(4)"></form>
               <span id="4_hour">00</span> :
               <span id="4_min">00</span> :
               <span id="4_sec">00</span> :
               <span id="4_milisec">00</span>
               </td>
-            <td><form><input type="radio" id="radio_5"></form>
+            <td><form><input type="radio" id="radio_5" onclick="radioClick(5)"></form>
               <span id="5_hour">00</span> :
               <span id="5_min">00</span> :
               <span id="5_sec">00</span> :
