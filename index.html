@@ -1,7 +1,7 @@
 <html>
     <style>
         table {
-          font-family: arial, sans-serif;
+          font-family: monospace;
           border-collapse: collapse;
           width: 100%;
         }
@@ -40,7 +40,7 @@
         var startstop = 0;
 
         var columns = 5
-var rows = 3;
+var rows = 4;
 
 function addColumn() {
 	var row_list = [];
@@ -54,22 +54,25 @@ function addColumn() {
 function addRow() {
   var table = document.getElementById("myTable");
   var row = table.insertRow(-1);
-  
-  for (let i = 0; i < (columns - 2); i++) {
-  	new_cell = row.insertCell(i);
-    new_cell.innerHTML = "<form><input type=\"text\" value=\"\"></form>";
-    }
-    rows = rows + 1;
+  rows = rows + 1;
+    notes_cell = row.insertCell(0);
+    notes_cell.innerHTML = "<form><input type=\"text\" value=\"\" id=\"" + (rows-1).toString() +  "_notes\"></form>";
+    transcription_cell = row.insertCell(0);
+    transcription_cell.innerHTML = "<form><input type=\"text\" value=\"\" id=\"" + (rows-1).toString() +  "_transcription\"></form>";
+    translation_cell = row.insertCell(0);
+    translation_cell.innerHTML = "<form><input type=\"text\" value=\"\" id=\"" + (rows-1).toString() +  "_translation\"></form>";    
     start_cell = row.insertCell(-1);
-    start_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows-1)*2).toString() + "\"></form><h1><span id=\"" + ((rows-1)*2).toString() + "_hour\">00</span> : <span id=\"" + ((rows-1)*2).toString() + "_min\">00</span> : <span id=\"" + ((rows-1)*2).toString() + "_sec\">00</span> : <span id=\"" + ((rows-1)*2).toString() + "_milisec\">00</span></h1>";
+    start_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows-2)*2).toString() + "\"></form><span id=\"" + ((rows-2)*2).toString() + "_hour\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_min\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_sec\">00</span> : <span id=\"" + ((rows-2)*2).toString() + "_milisec\">00</span>";
     end_cell = row.insertCell(-1);
-    end_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows*2)-1).toString() + "\"></form><h1><span id=\"" + ((rows*2)-1).toString() + "_hour\">00</span> : <span id=\"" + ((rows*2)-1).toString() + "_min\">00</span> : <span id=\"" + ((rows*2)-1).toString() + "_sec\">00</span> : <span id=\"" + ((rows*2)-1).toString() + "_milisec\">00</span></h1>";
+    end_cell.innerHTML = "<form><input type=\"radio\" id=\"radio_" + ((rows*2)-3).toString() + "\"></form><span id=\"" + ((rows*2)-3).toString() + "_hour\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_min\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_sec\">00</span> : <span id=\"" + ((rows*2)-3).toString() + "_milisec\">00</span>";
 
 }
 
 function deleteRow() {
-  document.getElementById("myTable").deleteRow(-1);
-  rows = rows - 1;
+  if (rows > 2){
+    document.getElementById("myTable").deleteRow(-1);
+    rows = rows - 1;
+  }
 }
 
 function deleteColumn() {
@@ -82,6 +85,53 @@ function deleteColumn() {
   
   columns = columns - 1;
 }
+
+function createJSON() {
+  json_string = '{"rows":[],"translation_lg":"","transcription_lg":"","notes_lg":""}';  
+  outJSON = JSON.parse(json_string);
+  
+  outJSON["translation_lg"] = document.getElementById("translation_lg").value;
+    outJSON["transcription_lg"] = document.getElementById("transcription_lg").value;
+    outJSON["notes_lg"] = document.getElementById("notes_lg").value;
+  for (let i = 1; i < rows; i++) {
+    
+    outJSON['rows'].push({"translation":"","transcription":"","notes":"","start_time":0,"end_time":0})
+    outJSON['rows'][(i-1)].translation = document.getElementById(i.toString() + "_translation").value;
+    outJSON['rows'][(i-1)].transcription = document.getElementById(i.toString() + "_transcription").value;
+    outJSON['rows'][(i-1)].notes = document.getElementById(i.toString() + "_notes").value;
+    start_hour = parseInt(document.getElementById(((i*2)-2).toString() + "_hour").innerHTML);
+    start_min = parseInt(document.getElementById(((i*2)-2).toString() + "_min").innerHTML);
+    start_sec = parseInt(document.getElementById(((i*2)-2).toString() + "_sec").innerHTML);
+    start_milisec = parseInt(document.getElementById(((i*2)-2).toString() + "_milisec").innerHTML);
+    end_hour = parseInt(document.getElementById(((i*2)-1).toString() + "_hour").innerHTML);
+    end_min = parseInt(document.getElementById(((i*2)-1).toString() + "_min").innerHTML);
+    end_sec = parseInt(document.getElementById(((i*2)-1).toString() + "_sec").innerHTML);
+    end_milisec = parseInt(document.getElementById(((i*2)-1).toString() + "_milisec").innerHTML);
+    outJSON['rows'][(i-1)].start_time = start_milisec + (start_sec * 1000) + (start_min * 60000) + (start_hour * 3600000);
+    outJSON['rows'][(i-1)].end_time = end_milisec + (end_sec * 1000) + (end_min * 60000) + (end_hour * 3600000);
+  }
+}
+
+  function downloadObjectAsJson(exportObj, exportName){
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".json");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+  function exportFiles(){
+    createJSON();
+    console.log(outJSON)
+    downloadObjectAsJson(outJSON,"WebElicit");
+
+
+  }
+
+
+
 
         function startStop() { /* Toggle StartStop */
 
@@ -123,7 +173,7 @@ function deleteColumn() {
 
         function assign(){
           var check_id = 0;
-            for (let i = 0; i < (rows*2); i++) {
+            for (let i = 0; i < ((rows-1)*2); i++) {
                 
                 if (document.getElementById("radio_" + i.toString()).checked === true){
                     document.getElementById(i.toString() + "_milisec").innerHTML = miliSecOut;
@@ -228,10 +278,11 @@ function deleteColumn() {
         <button onclick="assign()">Assign time</button>
         <button onclick="clear_checked()">Clear Selected Time(s)</button>
         <p>
-        <button onclick="addColumn()">Add Column</button>
-        <button onclick="deleteColumn()">Delete Column</button>
+        
+        
         <button onclick="addRow()">Add Row</button>
         <button onclick="deleteRow()">Delete row</button>
+        <button onclick="exportFiles()">Export JSON</button>
       </td>
       </tr>
       </table>
@@ -239,56 +290,62 @@ function deleteColumn() {
     </div>  
     <div class="main">
         <table id="myTable">
-            <tr>
-                <td><form><input type="text" value=""></form></td>
-                <td><form><input type="text" value=""></form></td>
-                <td><form><input type="text" value=""></form></td>
-                <td><form><input type="radio" id="radio_0"></form><h1>
+          <tr><th>Translation<br><form><input type="text" id="translation_lg" placeholder="ISO 639-3"></form></th>
+            <th>Transcription<br><form><input type="text" id="transcription_lg" placeholder="ISO 639-3"></form></th>
+            <th>Notes<br><form><input type="text" id="notes_lg" placeholder="ISO 639-3"></form></th>
+            <th>Start Time</th>
+            <th>End Time</th>
+          </tr>  
+          <tr>
+                <td><form><input type="text" name="Translation" value="" id="1_translation"></form></td>
+                <td><form><input type="text" name="Transcription" value="" id="1_transcription"></form></td>
+                <td><form><input type="text" name="Notes" value="" id="1_notes"></form></td>
+                <td><form><input type="radio" id="radio_0"></form>
                   <span id="0_hour">00</span> :
                   <span id="0_min">00</span> :
                   <span id="0_sec">00</span> :
                   <span id="0_milisec">00</span>
-                  </h1></td>
-                <td><form><input type="radio" id="radio_1"></form><h1>
+                  </td>
+                <td><form><input type="radio" id="radio_1"></form>
                   <span id="1_hour">00</span> :
                   <span id="1_min">00</span> :
                   <span id="1_sec">00</span> :
                   <span id="1_milisec">00</span>
-                  </h1></td>
+                  </td>
             </tr>
             <tr>
-              <td><form><input type="text" value=""></form></td>
-              <td><form><input type="text" value=""></form></td>
-              <td><form><input type="text" value=""></form></td>
-              <td><form><input type="radio" id="radio_2"></form><h1>
+              <td><form><input type="text" name="Translation" value="" id="2_translation"></form></td>
+                <td><form><input type="text" name="Transcription" value="" id="2_transcription"></form></td>
+                <td><form><input type="text" name="Notes" value="" id="2_notes"></form></td>
+              <td><form><input type="radio" id="radio_2"></form>
                 <span id="2_hour">00</span> :
                 <span id="2_min">00</span> :
                 <span id="2_sec">00</span> :
                 <span id="2_milisec">00</span>
-                </h1></td>
-              <td><form><input type="radio" id="radio_3"></form><h1>
+                </td>
+              <td><form><input type="radio" id="radio_3"></form>
                 <span id="3_hour">00</span> :
                 <span id="3_min">00</span> :
                 <span id="3_sec">00</span> :
                 <span id="3_milisec">00</span>
-                </h1></td>
+                </td>
           </tr>
           <tr>
-            <td><form><input type="text" value=""></form></td>
-            <td><form><input type="text" value=""></form></td>
-            <td><form><input type="text" value=""></form></td>
-            <td><form><input type="radio" id="radio_4"></form><h1>
+            <td><form><input type="text" name="Translation" value="" id="3_translation"></form></td>
+                <td><form><input type="text" name="Transcription" value="" id="3_transcription"></form></td>
+                <td><form><input type="text" name="Notes" value="" id="3_notes"></form></td>
+            <td><form><input type="radio" id="radio_4"></form>
               <span id="4_hour">00</span> :
               <span id="4_min">00</span> :
               <span id="4_sec">00</span> :
               <span id="4_milisec">00</span>
-              </h1></td>
-            <td><form><input type="radio" id="radio_5"></form><h1>
+              </td>
+            <td><form><input type="radio" id="radio_5"></form>
               <span id="5_hour">00</span> :
               <span id="5_min">00</span> :
               <span id="5_sec">00</span> :
               <span id="5_milisec">00</span>
-              </h1></td>
+              </td>
         </tr>
         </table><br>
       </div>
