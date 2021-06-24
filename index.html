@@ -41,7 +41,7 @@
 
         var columns = 5
 var rows = 4;
-
+var TG_string = "";
 function radioClick(radio_num){
   for (let i = 0; i < ((rows-1)*2); i++) {
     if (document.getElementById("radio_" + i.toString()).checked === true){
@@ -54,15 +54,7 @@ function radioClick(radio_num){
 
 }
 
-function addColumn() {
-	var row_list = [];
-  	for (let i = 0; i < rows; i++) {
-  		row_list[i] = document.getElementById("myTable").rows[i];
-    	var x = row_list[i].insertCell((columns-2));
-  		x.innerHTML = "<form><input type=\"text\" value=\"\"></form>";
-    }
-  columns = columns + 1;
-}
+
 function addRow() {
   var table = document.getElementById("myTable");
   var row = table.insertRow(-1);
@@ -86,6 +78,16 @@ function deleteRow() {
     rows = rows - 1;
   }
 }
+/*
+function addColumn() {
+	var row_list = [];
+  	for (let i = 0; i < rows; i++) {
+  		row_list[i] = document.getElementById("myTable").rows[i];
+    	var x = row_list[i].insertCell((columns-2));
+  		x.innerHTML = "<form><input type=\"text\" value=\"\"></form>";
+    }
+  columns = columns + 1;
+}
 
 function deleteColumn() {
 
@@ -97,7 +99,7 @@ function deleteColumn() {
   
   columns = columns - 1;
 }
-
+*/ 
 function createJSON() {
   json_string = '{"rows":[],"translation_lg":"","transcription_lg":"","notes_lg":""}';  
   outJSON = JSON.parse(json_string);
@@ -124,7 +126,76 @@ function createJSON() {
   }
 }
 
-  function downloadObjectAsJson(exportObj, exportName){
+function createTextGrid() {
+  final_time = (outJSON['rows'][outJSON['rows'].length-1].end_time / 1000);
+  tier_counter = 1;
+  TG_string = "File type = \"ooTextFile\"\nObject class = \"TextGrid\"\n\nxmin = 0\nxmax = " + (end_time / 1000).toString() + "\ntiers? <exists>\nsize = 4\nitem []:\n";
+  
+  for (let i = 1; i < 5; i++){
+    TG_string += "    item [" + tier_counter.toString() + "]:\n";
+    TG_string += "        class = \"IntervalTier\"\n"
+    if (tier_counter === 1){
+        TG_string +="        name = \"REFID\"\n";
+    } 
+    if (tier_counter === 2){
+      TG_string +="        name = \"Translation\"\n";
+    }
+    if (tier_counter === 3){
+      TG_string +="        name = \"Transcription\"\n";
+    }
+    if (tier_counter === 4){
+      TG_string += "        name = \"Notes\"\n";
+    }  
+    TG_string += "        xmin = 0\n";
+    TG_string += "        xmax = " + (end_time / 1000).toString() + "\n";
+    TG_string += "        intervals: size = " + (((rows*2)-1).toString() + "\n")
+    //#Fill out each TextGrid interval using the dictionary
+    
+    for (let j = 1; j < rows; j++){
+      if (j === 1){
+        temp_prev_xmax = 0
+      } else{              
+        temp_prev_xmax = (outJSON['rows'][j-2].end_time / 1000);
+      }
+      temp_next_xmin = (outJSON['rows'][j-1].start_time / 1000);
+      TG_string += "        intervals [" + ((j * 2) - 1).toString() + "]:\n";
+      if (j == 1){
+        TG_string += "            xmin = 0\n";
+      } else {
+        TG_string += "            xmin = " + temp_prev_xmax.toString() + "\n";
+      }
+      TG_string += "            xmax = " + temp_next_xmin.toString() + "\n";
+      TG_string += "            text = \"\"\n";
+      TG_string += "        intervals [" + (j * 2).toString() + "]:\n";
+      TG_string += "            xmin = " + (outJSON['rows'][j-1].start_time / 1000).toString() + "\n";
+      TG_string += "            xmax = " + (outJSON['rows'][j-1].end_time / 1000).toString() + "\n";
+      if (tier_counter === 1){
+              TG_string +=  "            text = \"" + j.toString() + "\"\n";
+      } 
+      if (tier_counter === 2){
+        TG_string += "            text = \"" + outJSON['rows'][j-1].translation + "\"\n";
+      }
+      if (tier_counter === 3){
+        TG_string += "            text = \"" + outJSON['rows'][j-1].transcription + "\"\n";
+      }
+      if (tier_counter === 4){
+        TG_string += "            text = \"" + outJSON['rows'][j-1].notes + "\"\n";
+      }         
+            
+    }
+    
+    TG_string += "        intervals [" + ((rows*2)-1).toString() + "]:\n";    
+    TG_string +=  "            xmin = " + final_time.toString() + "\n";
+    TG_string +=  "            xmax = " + (end_time / 1000).toString() + "\n";
+    TG_string +=  "            text = \"\"\n";
+    tier_counter += 1
+}
+}
+
+
+
+  function downloadObject(typeObj,exportObj,exportName){
+    if (typeObj === "JSON"){
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
     var downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href",     dataStr);
@@ -133,12 +204,22 @@ function createJSON() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
   }
+  if (typeObj === "TextGrid"){
+    var dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(exportObj);
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".TextGrid");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+  }
 
   function exportFiles(){
     createJSON();
-    console.log(outJSON)
-    downloadObjectAsJson(outJSON,"WebElicit");
-
+    createTextGrid();
+    downloadObject("JSON",outJSON,"WebElicit");
+    downloadObject("TextGrid",TG_string,"WebElicit");
 
   }
 
@@ -162,25 +243,49 @@ function createJSON() {
         
 
         function start() {
-        x = setInterval(timer, 10);
+        ticker.start();
+        start_time = Date.now();
         } /* Start */
 
         function stop() {
-        clearInterval(x);
-        } /* Stop */
+        ticker.stop();
+        end_time = Date.now() - start_time
+        if (end_time > 3600000){
+                      end_hour = Math.floor(end_time / 3600000)
+                      end_min = Math.floor((end_time - (3600000 * end_hour)) / 60000);
+                      end_sec = Math.floor((end_time - (3600000 * end_hour) - (60000 * end_min)) / 1000);
+                      end_milisec = end_time - (3600000 * end_hour) - (60000 * end_min) - (1000 * end_sec);
+                      
 
+                    } else { //Less than an hour
+                    if (end_time > 60000){ // If over a minute
+                      end_hour = 0
+                      end_min = Math.floor((end_time - (3600000 * end_hour)) / 60000);
+                      end_sec = Math.floor((end_time - (3600000 * end_hour) - (60000 * end_min)) / 1000);
+                      end_milisec = end_time - (3600000 * end_hour) - (60000 * end_min) - (1000 * end_sec);
+
+                    } else { // If less than a minute
+                      end_hour = 0
+                      end_min = 0;
+                      end_sec = Math.floor((end_time - (3600000 * end_hour) - (60000 * end_min)) / 1000);
+                      end_milisec = end_time - (3600000 * end_hour) - (60000 * end_min) - (1000 * end_sec);
+
+                    }
+        } /* Stop */
+      }
+      /*
         var milisec = 0;
-        var sec = 0; /* holds incrementing value */
+        var sec = 0;
         var min = 0;
         var hour = 0;
 
         /* Contains and outputs returned value of  function checkTime */
-
+/*
         var miliSecOut = 0;
         var secOut = 0;
         var minOut = 0;
         var hourOut = 0;
-
+*/
         /* Output variable End */
 
         function assign(){
@@ -188,23 +293,50 @@ function createJSON() {
             for (let i = 0; i < ((rows-1)*2); i++) {
                 
                 if (document.getElementById("radio_" + i.toString()).checked === true){
-                    document.getElementById(i.toString() + "_milisec").innerHTML = miliSecOut;
-                    document.getElementById(i.toString() + "_sec").innerHTML = secOut;
-                    document.getElementById(i.toString() + "_min").innerHTML = minOut;
-                    document.getElementById(i.toString() + "_hour").innerHTML = hourOut;
+                    //Assign the value based on the actual time which has elapsed rather than using the text in the displayed timer
+                    assign_time = Date.now() - start_time
+                    //If over an hour
+                    if (assign_time > 3600000){
+                      assign_hour = Math.floor(assign_time / 3600000)
+                      assign_min = Math.floor((assign_time - (3600000 * assign_hour)) / 60000);
+                      assign_sec = Math.floor((assign_time - (3600000 * assign_hour) - (60000 * assign_min)) / 1000);
+                      assign_milisec = assign_time - (3600000 * assign_hour) - (60000 * assign_min) - (1000 * assign_sec);
+                      
+
+                    } else { //Less than an hour
+                    if (assign_time > 60000){ // If over a minute
+                      assign_hour = 0
+                      assign_min = Math.floor((assign_time - (3600000 * assign_hour)) / 60000);
+                      assign_sec = Math.floor((assign_time - (3600000 * assign_hour) - (60000 * assign_min)) / 1000);
+                      assign_milisec = assign_time - (3600000 * assign_hour) - (60000 * assign_min) - (1000 * assign_sec);
+
+                    } else { // If less than a minute
+                      assign_hour = 0
+                      assign_min = 0;
+                      assign_sec = Math.floor((assign_time - (3600000 * assign_hour) - (60000 * assign_min)) / 1000);
+                      assign_milisec = assign_time - (3600000 * assign_hour) - (60000 * assign_min) - (1000 * assign_sec);
+
+                    }
+                    document.getElementById(i.toString() + "_hour").innerHTML = assign_hour;
+                    document.getElementById(i.toString() + "_min").innerHTML = assign_min;
+                    document.getElementById(i.toString() + "_sec").innerHTML = assign_sec;
+                    document.getElementById(i.toString() + "_milisec").innerHTML = assign_milisec;
+                  }
                     check_id = i;
                 }
               }
             document.getElementById("radio_" + check_id.toString()).checked = false;
-            document.getElementById("radio_" + (check_id+1).toString()).checked = true;
+            if (check_id < ((rows*2)-3)){
+              document.getElementById("radio_" + (check_id+1).toString()).checked = true;
+            }
         } 
         
-             
+            
         
         
-
+        /* // Old Time Code Not needed anymore
         function timer() {
-        /* Main Timer */
+        
 
 
         miliSecOut = checkTime(milisec);
@@ -214,7 +346,7 @@ function createJSON() {
 
         milisec = ++milisec;
 
-        if (milisec === 100) {
+        if (milisec === 1000) {
             milisec = 0;
             sec = ++sec;
         }
@@ -239,7 +371,7 @@ function createJSON() {
         }
 
 
-        /* Adds 0 when value is <10 */
+        
 
 
         function checkTime(i) {
@@ -248,23 +380,137 @@ function createJSON() {
         }
         return i;
         }
-
+*/
         function reset() {
 
 
-        /*Reset*/
+        
 
-        milisec = 0;
-        sec = 0;
-        min = 0
-        hour = 0;
+        //milisec = 0;
+        //sec = 0;
+        //min = 0
+        //hour = 0;
 
-        document.getElementById("milisec").innerHTML = "00";
+
         document.getElementById("sec").innerHTML = "00";
         document.getElementById("min").innerHTML = "00";
         document.getElementById("hour").innerHTML = "00";
 
         }
+        
+
+        var drift_history = [];
+        var drift_history_samples = 10;
+        var drift_correction = 0;
+
+        /**
+ * Self-adjusting interval to account for drifting
+ * 
+ * @param {function} workFunc  Callback containing the work to be done
+ *                             for each interval
+ * @param {int}      interval  Interval speed (in milliseconds) - This 
+ * @param {function} errorFunc (Optional) Callback to run if the drift
+ *                             exceeds interval
+ */
+function AdjustingInterval(workFunc, interval, errorFunc) {
+    var that = this;
+    var expected, timeout;
+    this.interval = interval;
+
+    this.start = function() {
+        expected = Date.now() + this.interval;
+        timeout = setTimeout(step, this.interval);
+    }
+
+    this.stop = function() {
+        clearTimeout(timeout);
+    }
+
+    function step() {
+        var drift = Date.now() - expected;
+        if (drift > that.interval) {
+            // You could have some default stuff here too...
+            if (errorFunc) errorFunc();
+        }
+        workFunc();
+        if (drift <= interval) {
+    // sample drift amount to history after removing current correction
+    // (add to remove because the correction is applied by subtraction)
+        drift_history.push(drift + drift_correction);
+
+    // predict new drift correction
+        drift_correction = calc_drift(drift_history);
+
+    // cap and refresh samples
+    if (drift_history.length >= drift_history_samples) {
+      drift_history.shift();
+    }  
+}
+        expected += that.interval;
+        timeout = setTimeout(step, Math.max(0, that.interval-drift- drift_correction));
+    }
+}
+// For testing purposes, we'll just increment
+// this and send it out to the console.
+var justSomeNumber = 0;
+
+// Define the work to be done
+var doWork = function() {
+    //console.log(++justSomeNumber);
+    ++document.getElementById("sec").innerHTML;
+    if (document.getElementById("sec").innerHTML < 10) {
+      document.getElementById("sec").innerHTML = "0" + document.getElementById("sec").innerHTML;
+    }
+    
+
+        if (document.getElementById("sec").innerHTML == 60) {
+            ++document.getElementById("min").innerHTML;
+            document.getElementById("sec").innerHTML = 0;
+            if (document.getElementById("min").innerHTML < 10) {
+      document.getElementById("min").innerHTML = "0" + document.getElementById("min").innerHTML;
+    }
+        }
+
+        if (document.getElementById("min").innerHTML == 60) {
+            document.getElementById("min").innerHTML = 0;
+            ++document.getElementById("hour").innerHTML;
+            if (document.getElementById("hour").innerHTML < 10) {
+      document.getElementById("hour").innerHTML = "0" + document.getElementById("hour").innerHTML;
+    }
+
+        }
+};
+
+// Define what to do if something goes wrong
+var doError = function() {
+    console.warn('The drift exceeded the interval.');
+};
+
+// (The third argument is optional)
+var ticker = new AdjustingInterval(doWork, 1000, doError);
+
+function calc_drift(arr){
+  // Calculate drift correction.
+
+  /*
+  In this example I've used a simple median.
+  You can use other methods, but it's important not to use an average. 
+  If the user switches tabs and back, an average would put far too much
+  weight on the outlier.
+  */
+
+  var values = arr.concat(); // copy array so it isn't mutated
+  
+  values.sort(function(a,b){
+    return a-b;
+  });
+  if(values.length ===0) return 0;
+  var half = Math.floor(values.length / 2);
+  if (values.length % 2) return values[half];
+  var median = (values[half - 1] + values[half]) / 2.0;
+  
+  return median;
+}
     </script>
     <body>
       <div class="navbar">
@@ -272,8 +518,7 @@ function createJSON() {
           <tr><td><h1>
         <span id="hour">00</span> :
         <span id="min">00</span> :
-        <span id="sec">00</span> :
-        <span id="milisec">00</span>
+        <span id="sec">00</span>
         </h1>
       </td>
       <td>
