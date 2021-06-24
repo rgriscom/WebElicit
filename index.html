@@ -215,11 +215,14 @@ function createTextGrid() {
   }
   }
 
-  function exportFiles(){
-    createJSON();
-    createTextGrid();
-    downloadObject("JSON",outJSON,"WebElicit");
+  function exportFiles(exportType){
+    if (exportType === "JSON"){
+      createJSON();
+      downloadObject("JSON",outJSON,"WebElicit");
+    } else{
+    createTextGrid(); 
     downloadObject("TextGrid",TG_string,"WebElicit");
+  }
 
   }
 
@@ -530,7 +533,8 @@ function calc_drift(arr){
         
         <button onclick="addRow()">Add Row</button>
         <button onclick="deleteRow()">Delete row</button>
-        <button onclick="exportFiles()">Export JSON</button>
+        <button onclick="exportFiles('JSON')">Export JSON</button>
+        <button onclick="exportFiles('TextGrid')">Export TextGrid</button>
       </td>
       </tr>
       </table>
