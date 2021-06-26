@@ -53,7 +53,22 @@ function radioClick(radio_num){
 
 
 }
-
+//Generates a UUID
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();//Timestamp
+    var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16;//random number between 0 and 16
+        if(d > 0){//Use timestamp until depleted
+            r = (d + r)%16 | 0;
+            d = Math.floor(d/16);
+        } else {//Use microseconds since page-load if supported
+            r = (d2 + r)%16 | 0;
+            d2 = Math.floor(d2/16);
+        }
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
 
 function addRow() {
   var table = document.getElementById("myTable");
@@ -107,6 +122,7 @@ function createJSON() {
   outJSON["translation_lg"] = document.getElementById("translation_lg").value;
     outJSON["transcription_lg"] = document.getElementById("transcription_lg").value;
     outJSON["notes_lg"] = document.getElementById("notes_lg").value;
+    outJSON["title"] = document.getElementById("doc_title").value;
   for (let i = 1; i < rows; i++) {
     
     outJSON['rows'].push({"translation":"","transcription":"","notes":"","start_time":0,"end_time":0})
@@ -192,6 +208,47 @@ function createTextGrid() {
 }
 }
 
+function createFlextext() {
+        document_uuid = generateUUID();
+        media_uuid = generateUUID();
+        analysis_lg_code = outJSON["translation_lg"];
+        document_title = outJSON["title"];
+
+        FT_string = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        FT_string += "<document version=\"2\">\n";
+        FT_string += "    <interlinear-text guid=\"" + document_uuid +  "\">\n";
+        FT_string += "        <item lang=\"" + analysis_lg_code + "\" type=\"title\">" + document_title + "</item>\n";
+        FT_string += "        <paragraphs>\n";
+        
+
+        //Cycle through all of the annotations    
+        annotation_counter = 1;
+        for (let i = 1; i < rows; i++){
+          paragraph_uuid = generateUUID();
+          phrase_uuid = generateUUID();
+          FT_string += "            <paragraph guid=\"" + paragraph_uuid + "\">\n";
+          FT_string += "                <phrases>\n";
+          FT_string += "                    <phrase begin-time-offset=\"" + (outJSON['rows'][i-1].start_time).toString() + "\"\n";
+          FT_string += "                        end-time-offset=\"" + (outJSON['rows'][i-1].end_time).toString() + "\"\n";
+          FT_string += "                        guid=\"" + phrase_uuid + "\"\n";
+          FT_string += "                        media-file=\"" + media_uuid + "\" speaker=\"A\">\n";
+          FT_string += "                        <item lang=\"" + outJSON["transcription_lg"] + "\" type=\"txt\">" + outJSON['rows'][i-1].transcription + "</item>\n";
+          //FT_string += "                        <words/>\n";
+          FT_string += "                        <item lang=\"zxx\" type=\"gls\">" + i.toString() + "</item>\n";
+          FT_string += "                        <item lang=\"" + outJSON["translation_lg"] + "\" type=\"gls\">" + outJSON['rows'][i-1].translation + "</item>\n";
+          FT_string += "                    </phrase>\n";
+          FT_string += "                </phrases>\n";
+          FT_string += "            </paragraph>\n";
+          annotation_counter += 1
+	}
+        FT_string += "        </paragraphs>\n";
+        FT_string += "        <media-files offset-type=\"\">\n";
+        FT_string += "            <media guid=\"" + media_uuid + "\" location=\"\"/>\n";
+        FT_string += "        </media-files>\n";
+        FT_string += "    </interlinear-text>\n";
+        FT_string += "</document>";
+        
+    }
 
 
   function downloadObject(typeObj,exportObj,exportName){
@@ -213,15 +270,31 @@ function createTextGrid() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
   }
+  if (typeObj === "Flextext"){
+    var dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(exportObj);
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".flextext");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
   }
 
   function exportFiles(exportType){
     if (exportType === "JSON"){
       createJSON();
-      downloadObject("JSON",outJSON,"WebElicit");
-    } else{
+      downloadObject("JSON",outJSON,document.getElementById("doc_title").value);
+    } 
+    if (exportType === "TextGrid") {
+    createJSON();
     createTextGrid(); 
-    downloadObject("TextGrid",TG_string,"WebElicit");
+    downloadObject("TextGrid",TG_string,document.getElementById("doc_title").value);
+  }
+  if (exportType === "Flextext") {
+    createJSON();
+    createFlextext(); 
+    downloadObject("Flextext",FT_string,document.getElementById("doc_title").value);
   }
 
   }
@@ -276,20 +349,7 @@ function createTextGrid() {
                     }
         } /* Stop */
       }
-      /*
-        var milisec = 0;
-        var sec = 0;
-        var min = 0;
-        var hour = 0;
-
-        /* Contains and outputs returned value of  function checkTime */
-/*
-        var miliSecOut = 0;
-        var secOut = 0;
-        var minOut = 0;
-        var hourOut = 0;
-*/
-        /* Output variable End */
+      
 
         function assign(){
           var check_id = 0;
@@ -336,69 +396,10 @@ function createTextGrid() {
         
             
         
-        
-        /* // Old Time Code Not needed anymore
-        function timer() {
-        
-
-
-        miliSecOut = checkTime(milisec);
-        secOut = checkTime(sec);
-        minOut = checkTime(min);
-        hourOut = checkTime(hour);
-
-        milisec = ++milisec;
-
-        if (milisec === 1000) {
-            milisec = 0;
-            sec = ++sec;
-        }
-
-        if (sec == 60) {
-            min = ++min;
-            sec = 0;
-        }
-
-        if (min == 60) {
-            min = 0;
-            hour = ++hour;
-
-        }
-
-
-        document.getElementById("milisec").innerHTML = miliSecOut;
-        document.getElementById("sec").innerHTML = secOut;
-        document.getElementById("min").innerHTML = minOut;
-        document.getElementById("hour").innerHTML = hourOut;
-
-        }
-
-
-        
-
-
-        function checkTime(i) {
-        if (i < 10) {
-            i = "0" + i;
-        }
-        return i;
-        }
-*/
         function reset() {
-
-
-        
-
-        //milisec = 0;
-        //sec = 0;
-        //min = 0
-        //hour = 0;
-
-
         document.getElementById("sec").innerHTML = "00";
         document.getElementById("min").innerHTML = "00";
         document.getElementById("hour").innerHTML = "00";
-
         }
         
 
@@ -406,15 +407,7 @@ function createTextGrid() {
         var drift_history_samples = 10;
         var drift_correction = 0;
 
-        /**
- * Self-adjusting interval to account for drifting
- * 
- * @param {function} workFunc  Callback containing the work to be done
- *                             for each interval
- * @param {int}      interval  Interval speed (in milliseconds) - This 
- * @param {function} errorFunc (Optional) Callback to run if the drift
- *                             exceeds interval
- */
+      
 function AdjustingInterval(workFunc, interval, errorFunc) {
     var that = this;
     var expected, timeout;
@@ -535,16 +528,17 @@ function calc_drift(arr){
         <button onclick="deleteRow()">Delete row</button>
         <button onclick="exportFiles('JSON')">Export JSON</button>
         <button onclick="exportFiles('TextGrid')">Export TextGrid</button>
+        <button onclick="exportFiles('Flextext')">Export Flextext</button>
       </td>
-      </tr>
       </table>
       </p>
     </div>  
     <div class="main">
+      Session Title:<form><input type="text" name="Title" value="" id="doc_title"></form>
         <table id="myTable">
-          <tr><th>Translation<br><form><input type="text" id="translation_lg" placeholder="ISO 639-3"></form></th>
-            <th>Transcription<br><form><input type="text" id="transcription_lg" placeholder="ISO 639-3"></form></th>
-            <th>Notes<br><form><input type="text" id="notes_lg" placeholder="ISO 639-3"></form></th>
+          <tr><th>Translation<br><form><input type="text" id="translation_lg" placeholder="ISO 639-1"></form></th>
+            <th>Transcription<br><form><input type="text" id="transcription_lg" placeholder="ISO 639-1"></form></th>
+            <th>Notes<br><form><input type="text" id="notes_lg" placeholder="ISO 639-1"></form></th>
             <th>Start Time</th>
             <th>End Time</th>
           </tr>  
