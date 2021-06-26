@@ -250,6 +250,87 @@ function createFlextext() {
         
     }
 
+  function createEAF() {
+//Fill out the beginning of the EAF file
+        EAF_string = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        today = new Date()
+        EAF_string += "<ANNOTATION_DOCUMENT AUTHOR=\"unspecified\" DATE=\"" + today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate() + "T" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + "-08:00\" FORMAT=\"3.0\" VERSION=\"3.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.mpi.nl/tools/elan/EAFv3.0.xsd\">\n";
+        EAF_string += "    <HEADER MEDIA_FILE=\"\" TIME_UNITS=\"milliseconds\">\n";
+
+  //Fixes slashes in Windows directories
+//        if Operating_System == 'Windows':                   
+//          EAF_string += "        <MEDIA_DESCRIPTOR MEDIA_URL=\"file:///" + filename_stem + ".wav\" MIME_TYPE=\"audio/x-wav\" RELATIVE_MEDIA_URL=\"./" + filename_stem + ".wav\"/>\n";
+//        else:
+//          EAF_string += "        <MEDIA_DESCRIPTOR MEDIA_URL=\"file://" + filename_stem + ".wav\" MIME_TYPE=\"audio/x-wav\" RELATIVE_MEDIA_URL=\"./" + filename_stem + ".wav\"/>\n";
+        EAF_string += "        <PROPERTY NAME=\"URN\">urn:nl-mpi-tools-elan-eaf:93cd58ea-4af9-44d5-a6d5-d468217ccf5e</PROPERTY>\n";
+        EAF_string += "        <PROPERTY NAME=\"lastUsedAnnotationId\">" + (rows*5).toString() + "</PROPERTY>\n";
+        EAF_string += "    </HEADER>\n";
+        EAF_string += "    <TIME_ORDER>\n";                      
+  //Fill out time slots
+        for (let i =1; i < rows; i++) {
+          EAF_string += "        <TIME_SLOT TIME_SLOT_ID=\"ts" + ((i * 2) - 1).toString() + "\" TIME_VALUE=\"" + (outJSON['rows'][i-1].start_time).toString() + "\"/>\n";
+          EAF_string += "        <TIME_SLOT TIME_SLOT_ID=\"ts" + (i * 2).toString() + "\" TIME_VALUE=\"" + (outJSON['rows'][i-1].end_time).toString() + "\"/>\n";
+          }
+  //Fill out RFID annotations
+        EAF_string += "    </TIME_ORDER>\n";
+        EAF_string += "    <TIER DEFAULT_LOCALE=\"en\" LINGUISTIC_TYPE_REF=\"REFID\" TIER_ID=\"REFID\">\n";
+
+        for (let i =1; i < rows; i++) {
+          EAF_string += "        <ANNOTATION>\n";
+          EAF_string += "            <ALIGNABLE_ANNOTATION ANNOTATION_ID=\"a" + (2 * (rows-1) + i).toString() + "\" TIME_SLOT_REF1=\"ts" + ((i * 2) -1).toString() + "\" TIME_SLOT_REF2=\"ts" + (i * 2).toString() + "\">\n";
+          EAF_string += "                <ANNOTATION_VALUE>" + i.toString() + "</ANNOTATION_VALUE>\n";
+          EAF_string += "            </ALIGNABLE_ANNOTATION>\n";
+          EAF_string += "        </ANNOTATION>\n";
+          }
+        EAF_string += "    </TIER>\n";            
+//Fill out transcription and translation annotations
+                     
+            EAF_string += "    <TIER DEFAULT_LOCALE=\"en\" LINGUISTIC_TYPE_REF=\"Translation\" PARENT_REF=\"REFID\" TIER_ID=\"Translation\">\n";
+
+            for (let i =1; i < rows; i++) {
+              EAF_string += "        <ANNOTATION>\n";
+              EAF_string += "            <REF_ANNOTATION ANNOTATION_ID=\"a" + ((3 * (rows-1)) + i).toString() + "\" ANNOTATION_REF=\"a" + ((2 * (rows-1)) + i).toString() + "\">\n";
+              EAF_string += "                <ANNOTATION_VALUE>" + outJSON['rows'][i-1].translation  + "</ANNOTATION_VALUE>\n";
+              EAF_string += "            </REF_ANNOTATION>\n";
+              EAF_string += "        </ANNOTATION>\n";
+              }
+            EAF_string += "    </TIER>\n";
+
+            EAF_string += "    <TIER DEFAULT_LOCALE=\"en\" LINGUISTIC_TYPE_REF=\"Transcription\" PARENT_REF=\"REFID\" TIER_ID=\"Transcription\">\n";
+	 for (let i =1; i < rows; i++) {
+              EAF_string += "        <ANNOTATION>\n";
+              EAF_string += "            <REF_ANNOTATION ANNOTATION_ID=\"a" + ((4 * (rows-1)) + i).toString() + "\" ANNOTATION_REF=\"a" + ((2 * (rows-1)) + i).toString() + "\">\n";
+              EAF_string += "                <ANNOTATION_VALUE>" + outJSON['rows'][i-1].transcription  + "</ANNOTATION_VALUE>\n";
+              EAF_string += "            </REF_ANNOTATION>\n";
+              EAF_string += "        </ANNOTATION>\n";
+              }
+            EAF_string += "    </TIER>\n";
+            
+         EAF_string += "    <TIER DEFAULT_LOCALE=\"en\" LINGUISTIC_TYPE_REF=\"Notes\" PARENT_REF=\"REFID\" TIER_ID=\"Notes\">\n";
+	 for (let i =1; i < rows; i++) {
+              EAF_string += "        <ANNOTATION>\n";
+              EAF_string += "            <REF_ANNOTATION ANNOTATION_ID=\"a" + ((5 * (rows-1)) + i).toString() + "\" ANNOTATION_REF=\"a" + ((2 * (rows-1)) + i).toString() + "\">\n";
+              EAF_string += "                <ANNOTATION_VALUE>" + outJSON['rows'][i-1].notes  + "</ANNOTATION_VALUE>\n";
+              EAF_string += "            </REF_ANNOTATION>\n";
+              EAF_string += "        </ANNOTATION>\n";
+              }
+            EAF_string += "    </TIER>\n";
+                      
+                        
+  //Fill out end of the EAF file
+        EAF_string += "    <LINGUISTIC_TYPE GRAPHIC_REFERENCES=\"false\" LINGUISTIC_TYPE_ID=\"REFID\" TIME_ALIGNABLE=\"true\"/>\n";
+        EAF_string += "    <LINGUISTIC_TYPE CONSTRAINTS=\"Symbolic_Association\" GRAPHIC_REFERENCES=\"false\" LINGUISTIC_TYPE_ID=\"Transcription\" TIME_ALIGNABLE=\"false\"/>\n";   
+        EAF_string += "    <LINGUISTIC_TYPE CONSTRAINTS=\"Symbolic_Association\" GRAPHIC_REFERENCES=\"false\" LINGUISTIC_TYPE_ID=\"Translation\" TIME_ALIGNABLE=\"false\"/>\n";
+        EAF_string += "    <LINGUISTIC_TYPE CONSTRAINTS=\"Symbolic_Association\" GRAPHIC_REFERENCES=\"false\" LINGUISTIC_TYPE_ID=\"Notes\" TIME_ALIGNABLE=\"false\"/>\n";
+        EAF_string += "    <LOCALE COUNTRY_CODE=\"US\" LANGUAGE_CODE=\"en\"/>\n";
+        EAF_string += "    <CONSTRAINT DESCRIPTION=\"Time subdivision of parent annotation's time interval, no time gaps allowed within this interval\" STEREOTYPE=\"Time_Subdivision\"/>\n";
+        EAF_string += "    <CONSTRAINT DESCRIPTION=\"Symbolic subdivision of a parent annotation. Annotations refering to the same parent are ordered\" STEREOTYPE=\"Symbolic_Subdivision\"/>\n";
+        EAF_string += "    <CONSTRAINT DESCRIPTION=\"1-1 association with a parent annotation\" STEREOTYPE=\"Symbolic_Association\"/>\n";
+        EAF_string += "    <CONSTRAINT DESCRIPTION=\"Time alignable annotations within the parent annotation's time interval, gaps are allowed\" STEREOTYPE=\"Included_In\"/>\n";
+        EAF_string += "</ANNOTATION_DOCUMENT>";
+
+
+  }
 
   function downloadObject(typeObj,exportObj,exportName){
     if (typeObj === "JSON"){
@@ -279,6 +360,15 @@ function createFlextext() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
   }
+  if (typeObj === "EAF"){
+    var dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(exportObj);
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".eaf");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
   }
 
   function exportFiles(exportType){
@@ -295,6 +385,11 @@ function createFlextext() {
     createJSON();
     createFlextext(); 
     downloadObject("Flextext",FT_string,document.getElementById("doc_title").value);
+  }
+  if (exportType === "EAF") {
+    createJSON();
+    createEAF(); 
+    downloadObject("EAF",EAF_string,document.getElementById("doc_title").value);
   }
 
   }
@@ -529,6 +624,7 @@ function calc_drift(arr){
         <button onclick="exportFiles('JSON')">Export JSON</button>
         <button onclick="exportFiles('TextGrid')">Export TextGrid</button>
         <button onclick="exportFiles('Flextext')">Export Flextext</button>
+        <button onclick="exportFiles('EAF')">Export EAF</button>
       </td>
       </table>
       </p>
