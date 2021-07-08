@@ -107,6 +107,14 @@ function createJSON() {//Create JSON file from the data entered into the form
   }
 }
 
+function createCSV() {//Create CSV file from the JSON data
+  CSV_string = "Translation (" + outJSON["translation_lg"] + "),Transcription (" + outJSON["transcription_lg"] + "),Notes (" + outJSON["notes_lg"] + "),Start Time (ms),End Time (ms)\n";
+  for (let i = 1; i < rows; i++) {
+    CSV_string += outJSON['rows'][(i-1)].translation + "," + outJSON['rows'][(i-1)].transcription + "," + outJSON['rows'][(i-1)].notes + "," + outJSON['rows'][(i-1)].start_time.toString() + "," + outJSON['rows'][(i-1)].end_time.toString() + "\n";
+  }
+  
+}
+
 function createTextGrid() {//Create a TextGrid file by using the data contained with the JSON
   final_time = (outJSON['rows'][outJSON['rows'].length-1].end_time / 1000);
   tier_counter = 1;
@@ -334,28 +342,28 @@ function createFlextext() {//Create a Flextext file by using the data contained 
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
   }
+  if (typeObj === "CSV"){
+    var dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(exportObj);
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".csv");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
   }
 
-  function exportFiles(exportType){//Create a text file
-    if (exportType === "JSON"){
+  function exportFiles(){//Create text files
       createJSON();
-      downloadObject("JSON",outJSON,document.getElementById("doc_title").value);
-    } 
-    if (exportType === "TextGrid") {
-    createJSON();
-    createTextGrid(); 
+      createTextGrid(); 
+      createFlextext();
+      createEAF(); 
+      createCSV(); 
+    downloadObject("JSON",outJSON,document.getElementById("doc_title").value);
     downloadObject("TextGrid",TG_string,document.getElementById("doc_title").value);
-  }
-  if (exportType === "Flextext") {
-    createJSON();
-    createFlextext(); 
     downloadObject("Flextext",FT_string,document.getElementById("doc_title").value);
-  }
-  if (exportType === "EAF") {
-    createJSON();
-    createEAF(); 
     downloadObject("EAF",EAF_string,document.getElementById("doc_title").value);
-  }
+    downloadObject("CSV",CSV_string,document.getElementById("doc_title").value);
 
   }
 
@@ -561,4 +569,23 @@ function calc_drift(arr){
   return median;
 }
 
-   
+/* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+function myDropdown() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
