@@ -10,8 +10,8 @@ window.mobileAndTabletCheck = function() {
   if (check == true){
     alert("Mobile detected");
     document.getElementById("assign_button").onclick = assign;
-    document.getElementById("assign_button").onmousedown = emptyFunc;
-    document.getElementById("assign_button").onmouseup = emptyFunc;
+    document.getElementById("assign_button").removeAttribute("onmousedown");
+    document.getElementById("assign_button").removeAttribute("onmouseup");
     
   }
 };
