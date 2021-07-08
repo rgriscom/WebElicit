@@ -1,5 +1,5 @@
 # WebElicit 
-This is (a simple web application)[https://rgriscom.github.io/WebElicit/] which enables linguistic researchers to time-align text data with recorded speech during the creation of the recording itself. 
+This is [a simple web application](https://rgriscom.github.io/WebElicit/) which enables linguistic researchers to time-align text data with recorded speech during the creation of the recording itself. 
 
 ## How to use it
 ### Text
