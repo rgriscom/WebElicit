@@ -11,6 +11,7 @@ window.mobileAndTabletCheck = function() {
     document.getElementById("assign_button").onclick = assign;
     document.getElementById("assign_button").onmousedown = "";
     document.getElementById("assign_button").onmouseup = "";
+    alert("Mobile detected");
   }
 };
 window.mobileAndTabletCheck();
