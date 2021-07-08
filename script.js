@@ -367,6 +367,50 @@ function createFlextext() {//Create a Flextext file by using the data contained 
 
   }
 
+ 
+
+function getFile(event) { //Load a file from the Browse button
+	const input = event.target
+  if ('files' in input && input.files.length > 0) {
+	  placeFileContent(
+      document.getElementById('content-target'),
+      input.files[0])
+  }
+}
+
+function placeFileContent(target, file) { //Put the content of a loaded file into the interface
+	readFileContent(file).then(content => {
+  	readCSV(content);
+  }).catch(error => console.log(error))
+}
+
+function readFileContent(file) {//Read an uploaded file as text
+	const reader = new FileReader()
+  return new Promise((resolve, reject) => {
+    reader.onload = event => resolve(event.target.result)
+    reader.onerror = error => reject(error)
+    reader.readAsText(file)
+  })
+}
+
+
+  function readCSV(content){//Read text data from a CSV file
+    var CSV_text = content.split("\n");
+    for (let i = 1; i < CSV_text.length; i++) {
+      if (i > (rows - 1))
+      {
+        addRow();
+      }
+      document.getElementById(i.toString() + "_translation").value = CSV_text[i-1].split(",")[0]
+      document.getElementById(i.toString() + "_transcription").value = CSV_text[i-1].split(",")[1]
+      document.getElementById(i.toString() + "_notes").value = CSV_text[i-1].split(",")[2]
+    
+    }
+
+    
+
+  }
+
 
 
 

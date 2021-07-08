@@ -27,9 +27,19 @@
         
         <button onclick="addRow()">Add Row</button>
         <button onclick="deleteRow()">Delete row</button>
-        <button onclick="exportFiles()">Export</button>
-        
-        
+        <button onclick="exportFiles()">Export</button>  
+      </p>
+
+        </td>
+        <td>
+          <div>
+            <label for="input-file">Import CSV:</label><br>
+            <input type="file" id="input-file">
+            
+           </div>
+        <script>
+        document.getElementById("input-file").addEventListener('change', getFile);
+        </script>
         
       </td>
       </table>
