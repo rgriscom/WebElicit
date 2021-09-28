@@ -4,8 +4,8 @@ This is [a simple web application](https://rgriscom.github.io/WebElicit/) which 
 ## How to use it
 ### Requirements
 You need access to two devices:
-    1. A device which can run WebElicit in a web browser (e.g. computer or mobile device)
-    2. A second device which can record audio (e.g. audio recorder, mobile device, computer, etc.)
+1. A device which can run WebElicit in a web browser (e.g. computer or mobile device)
+2. A second device which can record audio (e.g. audio recorder, mobile device, computer, etc.)
 
 ### Text
 Text data may be entered directly into the text boxes or it can be imported from a CSV file using the "Browse..." button (no commas allowed in the text fields). The CSV import function reads the contents of the first three columns of the CSV file and populates the text boxes with that content, adding any rows if necessary.
